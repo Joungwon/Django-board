@@ -1,0 +1,64 @@
+{% extends 'base.html' %}
+{% block content %}
+<h1>DETAIL</h1><hr>
+
+{% if movie.image %} {% comment %} 이미지 있다면 출력 {% endcomment %}
+  <img src="{{movie.image.url}}" />
+{% endif %}
+
+<div> {% comment %}  글정보 {% endcomment %}
+  <p>작성자: {{movie.user}}</p>
+  <p>글 제목 : {{movie.title}}</p>
+  <p>글 내용 : {{movie.description}}</p>
+  <p>생성시각 : {{movie.created_at}}</p>
+  <p>수정시각 : {{movie.updated_at}}</p><hr>
+
+  {% comment %} 업데이트 정보- 유저랑 작성자가 같을때만 보이게 {% endcomment %}
+  {% if request.user == movie.user %}
+    <a href="{% url 'movies:update' movie.pk %}">수정하기</a><br>
+    <form action="{% url 'movies:delete' movie.pk %}">
+      {% csrf_token %}
+      <input type="submit" value="DELETE">
+    </form><br>
+    
+  {% endif %}
+    <a href="{% url 'movies:index' %}">메인페이지로</a><br>
+    {% comment %}댓글 구현 {% endcomment %}
+    <h5>댓글 목록 </h5><hr>  
+    {% if comments %}
+      <p><b>{{comments|length}}개의 댓글</b></p>
+    {% endif %}
+      <ul>
+        {% comment %} 댓글 표시 - 댓글 단유저 표시 {% endcomment %}
+        {% for comment in comments %}
+          <li>{{comment.content}} - {{comment.user}}
+          {% comment %} 댓글 삭제버튼 구현 +해당유저만 삭제 보이게 {% endcomment %}
+          {% if request.user == comment.user %}
+            {% comment %} 댓글 삭제기능은 pk값을 두개 지정해줘야한다. {% endcomment %}
+            <form action="{% url 'movies:comments_delete' movie.pk comment.pk %}" method = "POST">
+              {% csrf_token %}
+              <input type="submit" value="삭제">
+            </form>
+          {% endif %}
+          </li>
+        {% empty %}  
+          <p>댓글이 없엉 :(</p>
+        {% endfor %}
+      </ul>   
+  
+  {% comment %} 유저가 로그인 했을때 {% endcomment %}
+  {% if request.user.is_authenticated %}
+    {% comment %} 댓글 생성버튼 {% endcomment %}
+    <form action="{% url 'movies:comments_create' movie.pk %}" method="POST">
+        {% csrf_token %}
+        {{comment_form}}
+        <input type="submit" value="작성">
+    </form>
+  {% else %}
+    <a href="{% url 'movies:login' %}">댓글 달려면 로그인 하라구!</a>
+  {% endif %}
+</div> 
+
+{% endblock content %}
+
+

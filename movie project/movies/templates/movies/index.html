@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+{% comment %} {% load my_filter %} 필터.py 가져오기 {% endcomment %}
+{% block content %}
+<h1>INDEX</h1>
+
+<a href="{% url 'movies:create' %} ">[CREATE]</a>
+<hr>
+
+{% for movie in movies  %}
+    {% comment %} 좋아요 버튼 {% endcomment %}
+    <div>
+        <form action="{% url 'movies:likes' movie.pk %}" method ="POST">
+            {% csrf_token %}
+            {% if request.user in movie.like_users.all %}
+                <input type="submit" value="좋아요 취소">
+            {% else %}
+                <input type="submit" value="좋아요">
+            {% endif %}
+        </form>
+    </div>
+
+    {% comment %} 게시글 아이디,제목 표기 {% endcomment %}
+    <p>
+        [{{movie.id}}] <a href="{% url 'movies:detail' movie.pk %}">{{movie.title}}</a><br>
+        {% comment %} 필터기능추가연습 [{{movie.id}}] <a href="{% url 'movies:detail' movie.pk %}">{{movie.title|my_filter}}</a><br>  {% endcomment %}
+        - 작성자: <a href="{% url 'accounts:profile' movie.user.username %}">{{movie.user}}</a>
+    </p>
+{% endfor %}
+
+
+{% endblock content %}
